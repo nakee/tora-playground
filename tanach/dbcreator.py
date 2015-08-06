@@ -67,46 +67,35 @@ class Parser:
                 self.book.write("<ps />\n")
             elif SPACE in tag:
                 self.book.write("<4space />\n")
-#            else:
-#                print(tag)
+            else:
+                print(tag)
 
 
 
     def parse_pasuk(self, res):
 
-        if row[4].value is None:
-            return
+        m = re.match("(.*?){{(.*)}}(.*)", res)
+        if m is not None:
+            res = m.group(1) + self.parse_pasuk(m.group(2)) + m.group(3)
 
-        res = re.sub('{{'+PASEK+'}}','<pasek />' , res) # chr(0x05C0)
-        res = re.sub('{{'+LEGARMIA+'}}', '<legarmeih />', res)
+			
+        res = re.sub(PASEK,'<pasek />' , res) # chr(0x05C0)
+        res = re.sub(LEGARMIA, '<legarmeih />', res)
 
         BIG_LETTER="מ:אות-ג"
         SMALL_LETTER="מ:אות-ק"
-
+        KAMATZ="קמץ"
+        KTIVKRI="כו\"ק"
+        KRIKTIV="קו\"כ"
+		
         # more complex
-        pasuk1 = res
-        res = re.sub('{{'+BIG_LETTER+'.*\|.*?=*(.*?)}}','<special type=big>\g<1></special>',res)
+        res = re.sub(BIG_LETTER+'.*\|.*?=*(.*?)','<special type=big>\g<1></special>',res)
+        res = re.sub(SMALL_LETTER+'.*\|.*?=*(.*?)','<special type=small>\g<1></special>',res)
+        res = re.sub(NOSACH+'\|(.*?)\|.*', '\g<1>' ,res)
+        res = re.sub(KAMATZ+'\|.*=(.*?)\|.*','\g<1>' ,res)
+        res = re.sub(KTIVKRI+'\|(.*?)\|(.*?)\|.*','<qk q="\g<1>" k="\g<2>">' ,res)
 
-        if pasuk1 != res:
-            print("" + res + "\n" + pasuk1)
-
-        res = re.sub('{{'+SMALL_LETTER+'.*\|.*?=*(.*?)}}','<special type=small>\g<1></special>',res)
-        res = re.sub('{{'+NOSACH+'\|(.*?)\|.*}}','\g<1>' ,res)
-        res = re.sub('{{קמץ\|.*=(.*?)\|.*}}','\g<1>' ,res)
-        res = re.sub('{{כו"ק\|(.*?)\|(.*?)\|.*}}','<qk q="\g<1>" k="\g<2>">' ,res)
-
-         # get rid of nosach tags for now
-#        pasuk1 =  re.sub('{{'+NOSACH+'\|(.*?)\|.*}}','\g<1>', res)
-
-        # find all tags
-        #m = re.findall("{{(.*?)}}", tags)
-
-
-        #for tag in m:
-        #    print(tag)
-
-        self.book.write(res +'\n')
-
+        return res
 
 if __name__ == "__main__":
     parser = Parser()
@@ -117,4 +106,8 @@ if __name__ == "__main__":
             if row[4].value is not None:
                 parser.parse_tags(row[2].value)
 
-            parser.parse_pasuk(row[4].value)
+            if parser.book is not None and row[4].value is not None:
+                parser.book.write(parser.parse_pasuk(row[4].value))
+                parser.book.write('\n')
+
+	parse.close_book()
