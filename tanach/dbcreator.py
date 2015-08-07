@@ -1,21 +1,27 @@
-import PyQt5
-import sqlalchemy
+#import sqlalchemy
 import sys
-#import openpyxl
 from openpyxl import load_workbook
 import re
 _author__ = 'nakee'
 
+# editor can't handle hebrew
 START_REMARK = "מ:אין פרשה בתחילת פרק"
 NEW_BOOK = "מ:ספר חדש"
 PARASHA_OPEN = "פפ"
 PARASHA_CLOSE = "סס"
 NOSACH = "נוסח"
 SPACE = "ר4"
+COMMENT = "הערה"
+FONT_SIZE = "גודל גופן"
 PASEK = "מ:פסק"
 LEGARMIA = "מ:לגרמיה"
+BIG_LETTER = "מ:אות-ג"
+SMALL_LETTER = "מ:אות-ק"
+KAMATZ = "קמץ"
+KTIVKRI = "קו\"כ"
+KRIKTIV = "כו\"ק"
 
-class Parser:
+class Parser :
 
     def __init__(self):
         self.wb = load_workbook('Miqra_al_pi_ha-Mesorah.xlsx')
@@ -24,22 +30,22 @@ class Parser:
         self.book = None
 
     def close_book(self):
-        self.book.write('</book>\n</tanach>\n')
+        self.book.write('</book>\n</bible>\n')
 
-    def new_book(self, bookname):
+    def new_book(self, book_name):
 
         if self.book is not None:
             self.close_book()
         num = str(self.booknum)
-        print("Creating book " + num + ": " +bookname)
-        fname = num+bookname+'.xml'
-        self.book = open('out/'+fname,'w',encoding="UTF-8")
+        print("Creating book " + num + ": " + book_name)
+        file_name = num + book_name + '.xml'
+        self.book = open('out/' + file_name, 'w', encoding="UTF-8")
         self.book.write('<?xml version = "1.0" encoding="UTF-8"?>\n')
-        self.book.write('<tanach>\n<book>\n<names>\n')
+        self.book.write('<bible>\n<book>\n<names>\n')
         self.book.write('<teiHeader>\n')
-        self.book.write('<name>'+bookname+'</name>\n')
-        self.book.write('<number>'+num+'</number>\n')
-        self.book.write('<filename>'+fname+'</filename>\n')
+        self.book.write('<name>' + book_name + '</name>\n')
+        self.book.write('<number>' + num + '</number>\n')
+        self.book.write('<filename>' + file_name + '</filename>\n')
         self.book.write('</names>\n')
         self.book.write('</teiHeader>\n')
 
@@ -62,39 +68,37 @@ class Parser:
             elif NEW_BOOK in tag:
                 self.new_book(re.sub(NEW_BOOK+'\|', '', tag))
             elif PARASHA_OPEN in tag:
-                self.book.write("<pe />\n")
+                self.book.write("<open-parasha />\n")
             elif PARASHA_CLOSE in tag:
-                self.book.write("<ps />\n")
+                self.book.write("<closed-parasha />\n")
             elif SPACE in tag:
                 self.book.write("<4space />\n")
             else:
                 print(tag)
 
-
-
-    def parse_pasuk(self, res):
+    def parse_verse(self, res):
 
         m = re.match("(.*?){{(.*)}}(.*)", res)
         if m is not None:
-            res = m.group(1) + self.parse_pasuk(m.group(2)) + m.group(3)
+            res = m.group(1) + self.parse_verse(m.group(2)) + m.group(3)
+            print("We parse "+m.group(2))
 
-			
         res = re.sub(PASEK,'<pasek />' , res) # chr(0x05C0)
         res = re.sub(LEGARMIA, '<legarmeih />', res)
 
-        BIG_LETTER="מ:אות-ג"
-        SMALL_LETTER="מ:אות-ק"
-        KAMATZ="קמץ"
-        KTIVKRI="כו\"ק"
-        KRIKTIV="קו\"כ"
-		
-        # more complex
-        res = re.sub(BIG_LETTER+'.*\|.*?=*(.*?)','<special type=big>\g<1></special>',res)
-        res = re.sub(SMALL_LETTER+'.*\|.*?=*(.*?)','<special type=small>\g<1></special>',res)
-        res = re.sub(NOSACH+'\|(.*?)\|.*', '\g<1>' ,res)
-        res = re.sub(KAMATZ+'\|.*=(.*?)\|.*','\g<1>' ,res)
-        res = re.sub(KTIVKRI+'\|(.*?)\|(.*?)\|.*','<qk q="\g<1>" k="\g<2>">' ,res)
 
+        res = re.sub(FONT_SIZE+'.*','', res) #FIXME: get comments
+        res = re.sub('.*?'+COMMENT+'\|(.*?)}+','<comment>\g<1></comment>', res)
+
+        # more complex
+        res = re.sub(BIG_LETTER+'.*\|.*?=*(.*?)','<big>\g<1></big>', res)
+        res = re.sub(SMALL_LETTER+'.*\|.*?=*(.*?)','<small>\g<1></small>', res)
+        res = re.sub(NOSACH+'\|(.*?)\|.*', '\g<1>', res)
+        res = re.sub(KAMATZ+'\|.*=(.*?)\|.*','\g<1>', res)
+        res = re.sub(KTIVKRI+'.*?\|(.*?)\|(.*?)\|.*','<ktivkri ktiv="\g<1>" kri="\g<2>">', res)
+        res = re.sub(KRIKTIV+'.*?\|(.*?)\|(.*?)\|.*','<kriktiv kri="\g<1>" ktiv="\g<2>">', res)
+
+        print("after " + res)
         return res
 
 if __name__ == "__main__":
@@ -102,12 +106,17 @@ if __name__ == "__main__":
     for part in parser.parts:
         ws = parser.wb.get_sheet_by_name(part)
         for row in ws.rows:
+
+            if parser.booknum > 2:
+                continue
+
             # ignore Dovi's remarks for now
             if row[4].value is not None:
                 parser.parse_tags(row[2].value)
 
             if parser.book is not None and row[4].value is not None:
-                parser.book.write(parser.parse_pasuk(row[4].value))
-                parser.book.write('\n')
+                parser.book.write("<verse>")
+                parser.book.write(parser.parse_verse(row[4].value))
+                parser.book.write('<verse />\n')
 
-	parse.close_book()
+    parser.close_book()
