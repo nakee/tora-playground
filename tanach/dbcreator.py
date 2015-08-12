@@ -21,7 +21,7 @@ KAMATZ = "קמץ"
 KTIVKRI = "קו\"כ"
 KRIKTIV = "כו\"ק"
 
-class Parser :
+class Parser:
 
     def __init__(self):
         self.wb = load_workbook('Miqra_al_pi_ha-Mesorah.xlsx')
@@ -41,8 +41,9 @@ class Parser :
         file_name = num + book_name + '.xml'
         self.book = open('out/' + file_name, 'w', encoding="UTF-8")
         self.book.write('<?xml version = "1.0" encoding="UTF-8"?>\n')
-        self.book.write('<bible>\n<book>\n<names>\n')
+        self.book.write('<bible>\n<book>\n')
         self.book.write('<teiHeader>\n')
+        self.book.write('<names>\n')
         self.book.write('<name>' + book_name + '</name>\n')
         self.book.write('<number>' + num + '</number>\n')
         self.book.write('<filename>' + file_name + '</filename>\n')
@@ -78,10 +79,13 @@ class Parser :
 
     def parse_verse(self, res):
 
-        m = re.match("(.*?){{(.*)}}(.*)", res)
-        if m is not None:
+ #       print("function start " + res)
+        m = re.match("(.*){{(.*?)}}(.*)", res)
+        while m is not None:
+#        if m is not None:
             res = m.group(1) + self.parse_verse(m.group(2)) + m.group(3)
-            print("We parse "+m.group(2))
+  #          print("We parse "+m.group(2))
+            m = re.match("(.*){{(.*?)}}(.*)", res)
 
         res = re.sub(PASEK,'<pasek />' , res) # chr(0x05C0)
         res = re.sub(LEGARMIA, '<legarmeih />', res)
@@ -91,14 +95,14 @@ class Parser :
         res = re.sub('.*?'+COMMENT+'\|(.*?)}+','<comment>\g<1></comment>', res)
 
         # more complex
-        res = re.sub(BIG_LETTER+'.*\|.*?=*(.*?)','<big>\g<1></big>', res)
-        res = re.sub(SMALL_LETTER+'.*\|.*?=*(.*?)','<small>\g<1></small>', res)
+        res = re.sub(BIG_LETTER+'.*\|.*?=*(.+)','<big>\g<1></big>', res)
+        res = re.sub(SMALL_LETTER+'.*\|.*?=*(.+)','<small>\g<1></small>', res)
         res = re.sub(NOSACH+'\|(.*?)\|.*', '\g<1>', res)
         res = re.sub(KAMATZ+'\|.*=(.*?)\|.*','\g<1>', res)
         res = re.sub(KTIVKRI+'.*?\|(.*?)\|(.*?)\|.*','<ktivkri ktiv="\g<1>" kri="\g<2>">', res)
         res = re.sub(KRIKTIV+'.*?\|(.*?)\|(.*?)\|.*','<kriktiv kri="\g<1>" ktiv="\g<2>">', res)
 
-        print("after " + res)
+#        print("after " + res)
         return res
 
 if __name__ == "__main__":
@@ -107,8 +111,8 @@ if __name__ == "__main__":
         ws = parser.wb.get_sheet_by_name(part)
         for row in ws.rows:
 
-            if parser.booknum > 2:
-                continue
+   #         if parser.booknum > 2:
+   #             continue
 
             # ignore Dovi's remarks for now
             if row[4].value is not None:
