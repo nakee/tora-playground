@@ -18,8 +18,10 @@ LEGARMIA = "מ:לגרמיה"
 BIG_LETTER = "מ:אות-ג"
 SMALL_LETTER = "מ:אות-ק"
 KAMATZ = "קמץ"
-KTIVKRI = "קו\"כ"
-KRIKTIV = "כו\"ק"
+KRIKTIV = 'קו"כ'
+KTIVKRI = 'כו"ק'
+KRIKTIVAM = 'קו"כ-אם'
+
 
 class Parser:
 
@@ -79,12 +81,12 @@ class Parser:
 
     def parse_verse(self, res):
 
- #       print("function start " + res)
+        print("function start " + res)
         m = re.match("(.*){{(.*?)}}(.*)", res)
         while m is not None:
 #        if m is not None:
             res = m.group(1) + self.parse_verse(m.group(2)) + m.group(3)
-  #          print("We parse "+m.group(2))
+            print("We parse "+m.group(2))
             m = re.match("(.*){{(.*?)}}(.*)", res)
 
         res = re.sub(PASEK,'<pasek />' , res) # chr(0x05C0)
@@ -99,10 +101,12 @@ class Parser:
         res = re.sub(SMALL_LETTER+'.*\|.*?=*(.+)','<small>\g<1></small>', res)
         res = re.sub(NOSACH+'\|(.*?)\|.*', '\g<1>', res)
         res = re.sub(KAMATZ+'\|.*=(.*?)\|.*','\g<1>', res)
-        res = re.sub(KTIVKRI+'.*?\|(.*?)\|(.*?)\|.*','<ktivkri ktiv="\g<1>" kri="\g<2>">', res)
-        res = re.sub(KRIKTIV+'.*?\|(.*?)\|(.*?)\|.*','<kriktiv kri="\g<1>" ktiv="\g<2>">', res)
+ #       res = re.sub(KTIVKRI+'.*?\|(.+?)\|.*?=*(.+?)\|.*','<ktivkri ktiv="\g<1>" kri="\g<2>">', res)
+        res = re.sub(KRIKTIVAM+'.*?\|(.+?)\|.*?\=([^\(]+).*','<qereketiv qere="\g<1>" ketiv="\g<2>">', res)
+        res = re.sub(KTIVKRI+'.*?\|(.+?)\|.*?\=*(.+)','<qereketiv qere="\g<2>" ketiv="\g<1>">', res)
+        res = re.sub(KRIKTIV+'.*?\|(.+?)\|.*?\=*(.+)','<qereketiv qere="\g<1>" ketiv="\g<2>">', res)
 
-#        print("after " + res)
+        print("after " + res)
         return res
 
 if __name__ == "__main__":
@@ -111,8 +115,8 @@ if __name__ == "__main__":
         ws = parser.wb.get_sheet_by_name(part)
         for row in ws.rows:
 
-   #         if parser.booknum > 2:
-   #             continue
+#            if parser.booknum > 2:
+#                continue
 
             # ignore Dovi's remarks for now
             if row[4].value is not None:
