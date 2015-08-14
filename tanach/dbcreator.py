@@ -1,5 +1,5 @@
 #import sqlalchemy
-import sys
+#import sys
 from openpyxl import load_workbook
 import re
 _author__ = 'nakee'
@@ -20,7 +20,7 @@ SMALL_LETTER = "מ:אות-ק"
 KAMATZ = "קמץ"
 KRIKTIV = 'קו"כ'
 KTIVKRI = 'כו"ק'
-KRIKTIVAM = 'קו"כ-אם'
+KRIKTIVEM = 'קו"כ-אם'
 
 
 class Parser:
@@ -86,7 +86,7 @@ class Parser:
         while m is not None:
 #        if m is not None:
             res = m.group(1) + self.parse_verse(m.group(2)) + m.group(3)
-            print("We parse "+m.group(2))
+    #        print("We parse "+m.group(2))
             m = re.match("(.*){{(.*?)}}(.*)", res)
 
         res = re.sub(PASEK,'<pasek />' , res) # chr(0x05C0)
@@ -96,17 +96,21 @@ class Parser:
         res = re.sub(FONT_SIZE+'.*','', res) #FIXME: get comments
         res = re.sub('.*?'+COMMENT+'\|(.*?)}+','<comment>\g<1></comment>', res)
 
+
+        res = re.sub(PARASHA_OPEN+'+', '<open-parasha>', res)
+        res = re.sub(PARASHA_CLOSE+'+', '<closed-parasha>', res)
+
         # more complex
         res = re.sub(BIG_LETTER+'.*\|.*?=*(.+)','<big>\g<1></big>', res)
         res = re.sub(SMALL_LETTER+'.*\|.*?=*(.+)','<small>\g<1></small>', res)
         res = re.sub(NOSACH+'\|(.*?)\|.*', '\g<1>', res)
         res = re.sub(KAMATZ+'\|.*=(.*?)\|.*','\g<1>', res)
  #       res = re.sub(KTIVKRI+'.*?\|(.+?)\|.*?=*(.+?)\|.*','<ktivkri ktiv="\g<1>" kri="\g<2>">', res)
-        res = re.sub(KRIKTIVAM+'.*?\|(.+?)\|.*?\=([^\(]+).*','<qereketiv qere="\g<1>" ketiv="\g<2>">', res)
+        res = re.sub(KRIKTIVEM+'.*?\|(.+?)\|.*?\=([^\(]+).*','\g<1>', res)
         res = re.sub(KTIVKRI+'.*?\|(.+?)\|.*?\=*(.+)','<qereketiv qere="\g<2>" ketiv="\g<1>">', res)
         res = re.sub(KRIKTIV+'.*?\|(.+?)\|.*?\=*(.+)','<qereketiv qere="\g<1>" ketiv="\g<2>">', res)
 
-        print("after " + res)
+    #    print("after " + res)
         return res
 
 if __name__ == "__main__":
