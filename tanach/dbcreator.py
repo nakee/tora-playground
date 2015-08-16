@@ -31,8 +31,8 @@ DOTS = "מ:אות מנוקדת"
 HANG = "מ:אות תלויה"
 GALGAL = "גלגל"
 YARECH = "ירח בן יומו"
-
-
+HAFOCH = 'נו"ן הפוכה במקרא'
+PARASHA_EMTZA = "פסקא באמצע פסוק"
 
 class Parser:
 
@@ -134,6 +134,7 @@ class Parser:
         res = re.sub(SMALL_LETTER+'.*\|.*?=*(.+)','<small>\g<1></small>', res)
         res = re.sub(DOTS+'\|(.*?)\|.*','<dots>\g<1></dots>', res)
         res = re.sub(HANG+'\|(.+)','<hang>\g<1></hang>', res)
+        res = re.sub(HAFOCH+'.*','<nun>׆</nun>', res)
         res = re.sub(NOSACH+'\|(.*?)\|.*', '\g<1>', res)
         res = re.sub(KAMATZ+'\|.*=(.*?)\|.*','\g<1>', res)
  #       res = re.sub(KTIVKRI+'.*?\|(.+?)\|.*?=*(.+?)\|.*','<ktivkri ktiv="\g<1>" kri="\g<2>">', res)
