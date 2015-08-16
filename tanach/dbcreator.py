@@ -10,8 +10,13 @@ NEW_BOOK = "מ:ספר חדש"
 PARASHA_OPEN = "פפ"
 PARASHA_CLOSE = "סס"
 NOSACH = "נוסח"
-SPACE3 =  "ר3"
+SUBBOOK = "רווח"
+SPACE0 = "ר0"
+SPACE1 = "ר1"
+SPACE2 = "ר2"
+SPACE3 = "ר3"
 SPACE4 = "ר4"
+ATNACH_UPSIDE = "אתנח הפוך"
 COMMENT = "הערה"
 FONT_SIZE = "גודל גופן"
 PASEK = "מ:פסק"
@@ -22,6 +27,11 @@ KAMATZ = "קמץ"
 KRIKTIV = 'קו"כ'
 KTIVKRI = 'כו"ק'
 KRIKTIVEM = 'קו"כ-אם'
+DOTS = "מ:אות מנוקדת"
+HANG = "מ:אות תלויה"
+GALGAL = "גלגל"
+YARECH = "ירח בן יומו"
+
 
 
 class Parser:
@@ -75,16 +85,23 @@ class Parser:
                 self.book.write("<open-parasha />\n")
             elif PARASHA_CLOSE in tag:
                 self.book.write("<closed-parasha />\n")
+            elif SPACE0 in tag:
+                self.book.write("<0space />\n")
+            elif SPACE1 in tag:
+                self.book.write("<1space />\n")
+            elif SPACE2 in tag:
+                self.book.write("<2space />\n")
             elif SPACE3 in tag:
                 self.book.write("<3space />\n")
             elif SPACE4 in tag:
                 self.book.write("<4space />\n")
+            elif SUBBOOK in tag:
+                self.book.write("<sub-book />\n")
             else:
                 print(tag)
 
     def parse_verse(self, res):
 
-        print("function start " + res)
         m = re.match("(.*){{(.*?)}}(.*)", res)
         while m is not None:
 #        if m is not None:
@@ -102,13 +119,21 @@ class Parser:
 
         res = re.sub(PARASHA_OPEN+'+', '<open-parasha />', res)
         res = re.sub(PARASHA_CLOSE+'+', '<closed-parasha />', res)
+        res = re.sub(SPACE0, '<0space />', res)
+        res = re.sub(SPACE1, '<1space />', res)
+        res = re.sub(SPACE2, '<2space />', res)
         res = re.sub(SPACE3, '<3space />', res)
         res = re.sub(SPACE4, '<4space />', res)
+        res = re.sub(ATNACH_UPSIDE, '<upside-atnach />', res)
+        res = re.sub(GALGAL, '<galgal />', res)
+        res = re.sub(YARECH, '<yarech />', res)
 
 
         # more complex
         res = re.sub(BIG_LETTER+'.*\|.*?=*(.+)','<big>\g<1></big>', res)
         res = re.sub(SMALL_LETTER+'.*\|.*?=*(.+)','<small>\g<1></small>', res)
+        res = re.sub(DOTS+'\|(.*?)\|.*','<dots>\g<1></dots>', res)
+        res = re.sub(HANG+'\|(.+)','<hang>\g<1></hang>', res)
         res = re.sub(NOSACH+'\|(.*?)\|.*', '\g<1>', res)
         res = re.sub(KAMATZ+'\|.*=(.*?)\|.*','\g<1>', res)
  #       res = re.sub(KTIVKRI+'.*?\|(.+?)\|.*?=*(.+?)\|.*','<ktivkri ktiv="\g<1>" kri="\g<2>">', res)
@@ -128,11 +153,15 @@ if __name__ == "__main__":
 #            if parser.booknum > 2:
 #                continue
 
+
             # ignore Dovi's remarks for now
             if row[4].value is not None  and row[1].value is not None:
                 parser.parse_tags(row[2].value)
 
             if parser.book is not None and row[4].value is not None and row[1].value is not None:
+                res = row[4].value
+#                if '<' in res or '>' in res:
+#                    print("function start " + res)
                 parser.book.write("<verse>")
                 parser.book.write(parser.parse_verse(row[4].value))
                 parser.book.write('</verse>\n')
