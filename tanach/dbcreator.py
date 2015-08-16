@@ -10,7 +10,8 @@ NEW_BOOK = "מ:ספר חדש"
 PARASHA_OPEN = "פפ"
 PARASHA_CLOSE = "סס"
 NOSACH = "נוסח"
-SPACE = "ר4"
+SPACE3 =  "ר3"
+SPACE4 = "ר4"
 COMMENT = "הערה"
 FONT_SIZE = "גודל גופן"
 PASEK = "מ:פסק"
@@ -74,7 +75,9 @@ class Parser:
                 self.book.write("<open-parasha />\n")
             elif PARASHA_CLOSE in tag:
                 self.book.write("<closed-parasha />\n")
-            elif SPACE in tag:
+            elif SPACE3 in tag:
+                self.book.write("<3space />\n")
+            elif SPACE4 in tag:
                 self.book.write("<4space />\n")
             else:
                 print(tag)
@@ -97,8 +100,11 @@ class Parser:
         res = re.sub('.*?'+COMMENT+'\|(.*?)}+','<comment>\g<1></comment>', res)
 
 
-        res = re.sub(PARASHA_OPEN+'+', '<open-parasha>', res)
-        res = re.sub(PARASHA_CLOSE+'+', '<closed-parasha>', res)
+        res = re.sub(PARASHA_OPEN+'+', '<open-parasha />', res)
+        res = re.sub(PARASHA_CLOSE+'+', '<closed-parasha />', res)
+        res = re.sub(SPACE3, '<3space />', res)
+        res = re.sub(SPACE4, '<4space />', res)
+
 
         # more complex
         res = re.sub(BIG_LETTER+'.*\|.*?=*(.+)','<big>\g<1></big>', res)
@@ -108,7 +114,7 @@ class Parser:
  #       res = re.sub(KTIVKRI+'.*?\|(.+?)\|.*?=*(.+?)\|.*','<ktivkri ktiv="\g<1>" kri="\g<2>">', res)
         res = re.sub(KRIKTIVEM+'.*?\|(.+?)\|.*?\=([^\(]+).*','\g<1>', res)
         res = re.sub(KTIVKRI+'.*?\|(.+?)\|.*?\=*(.+)','<qereketiv qere="\g<2>" ketiv="\g<1>">', res)
-        res = re.sub(KRIKTIV+'.*?\|(.+?)\|.*?\=*(.+)','<qereketiv qere="\g<1>" ketiv="\g<2>">', res)
+        res = re.sub(KRIKTIV+'.*?\|(.+?)\|.*?\=*(.+)','<qereketiv qere="\g<2>" ketiv="\g<1>">', res)
 
     #    print("after " + res)
         return res
@@ -123,12 +129,12 @@ if __name__ == "__main__":
 #                continue
 
             # ignore Dovi's remarks for now
-            if row[4].value is not None:
+            if row[4].value is not None  and row[1].value is not None:
                 parser.parse_tags(row[2].value)
 
-            if parser.book is not None and row[4].value is not None:
+            if parser.book is not None and row[4].value is not None and row[1].value is not None:
                 parser.book.write("<verse>")
                 parser.book.write(parser.parse_verse(row[4].value))
-                parser.book.write('<verse />\n')
+                parser.book.write('</verse>\n')
 
     parser.close_book()
