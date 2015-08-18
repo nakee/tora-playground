@@ -1,5 +1,3 @@
-#import sqlalchemy
-#import sys
 from openpyxl import load_workbook
 import re
 _author__ = 'nakee'
@@ -65,85 +63,55 @@ class Parser:
 
         self.booknum += 1
 
-    def parse_tags(self, tags):
+    def parse_verse(self, verse):
 
-        if tags is None or  "__" in tags:
-            return
+        if verse is None or  "__" in verse:
+           return ''
 
-        # get rid of nosach tags for now
-        tags =  re.sub('{{'+NOSACH+'\|(.*?)\|.*}}','\g<1>', tags)
-
-        # find all tags
-        m = re.findall("{{(.*?)}}", tags)
-
-        for tag in m:
-            if START_REMARK in tag:
-                continue
-            elif NEW_BOOK in tag:
-                self.new_book(re.sub(NEW_BOOK+'\|', '', tag))
-            elif PARASHA_OPEN in tag:
-                self.book.write("<open-parasha />\n")
-            elif PARASHA_CLOSE in tag:
-                self.book.write("<closed-parasha />\n")
-            elif SPACE0 in tag:
-                self.book.write("<0space />\n")
-            elif SPACE1 in tag:
-                self.book.write("<1space />\n")
-            elif SPACE2 in tag:
-                self.book.write("<2space />\n")
-            elif SPACE3 in tag:
-                self.book.write("<3space />\n")
-            elif SPACE4 in tag:
-                self.book.write("<4space />\n")
-            elif SUBBOOK in tag:
-                self.book.write("<sub-book />\n")
-            else:
-                print(tag)
-
-    def parse_verse(self, res):
-
-        m = re.match("(.*){{(.*?)}}(.*)", res)
+        verse = re.sub('//', '', verse)
+	
+        m = re.match("(.*){{(.*?)}}(.*)", verse)
         while m is not None:
-#        if m is not None:
-            res = m.group(1) + self.parse_verse(m.group(2)) + m.group(3)
-    #        print("We parse "+m.group(2))
-            m = re.match("(.*){{(.*?)}}(.*)", res)
+            verse = m.group(1) + self.parse_verse(m.group(2)) + m.group(3)
+            m = re.match("(.*){{(.*?)}}(.*)", verse)
 
-        res = re.sub(PASEK,'<pasek />' , res) # chr(0x05C0)
-        res = re.sub(LEGARMIA, '<legarmeih />', res)
+        if NEW_BOOK in verse:
+            self.new_book(re.sub(NEW_BOOK+'\|', '', verse))
+            return ''
 
-
-        res = re.sub(FONT_SIZE+'.*','', res) #FIXME: get comments
-        res = re.sub('.*?'+COMMENT+'\|(.*?)}+','<comment>\g<1></comment>', res)
+        verse = re.sub(PASEK,'<pasek />' , verse) # chr(0x05C0)
+        verse = re.sub(LEGARMIA, '<legarmeih />', verse)
 
 
-        res = re.sub(PARASHA_OPEN+'+', '<open-parasha />', res)
-        res = re.sub(PARASHA_CLOSE+'+', '<closed-parasha />', res)
-        res = re.sub(SPACE0, '<0space />', res)
-        res = re.sub(SPACE1, '<1space />', res)
-        res = re.sub(SPACE2, '<2space />', res)
-        res = re.sub(SPACE3, '<3space />', res)
-        res = re.sub(SPACE4, '<4space />', res)
-        res = re.sub(ATNACH_UPSIDE, '<upside-atnach />', res)
-        res = re.sub(GALGAL, '<galgal />', res)
-        res = re.sub(YARECH, '<yarech />', res)
+        verse = re.sub(FONT_SIZE+'.*','', verse) #FIXME: get comments
+        verse = re.sub('.*?'+COMMENT+'\|(.*?)}+','<comment>\g<1></comment>', verse)
+
+
+        verse = re.sub(PARASHA_OPEN+'+', '<open-parasha />', verse)
+        verse = re.sub(PARASHA_CLOSE+'+', '<closed-parasha />', verse)
+        verse = re.sub(SPACE0, '<0space />', verse)
+        verse = re.sub(SPACE1, '<1space />', verse)
+        verse = re.sub(SPACE2, '<2space />', verse)
+        verse = re.sub(SPACE3, '<3space />', verse)
+        verse = re.sub(SPACE4, '<4space />', verse)
+        verse = re.sub(ATNACH_UPSIDE, '<upside-atnach />', verse)
+        verse = re.sub(GALGAL, '<galgal />', verse)
+        verse = re.sub(YARECH, '<yarech />', verse)
 
 
         # more complex
-        res = re.sub(BIG_LETTER+'.*\|.*?=*(.+)','<big>\g<1></big>', res)
-        res = re.sub(SMALL_LETTER+'.*\|.*?=*(.+)','<small>\g<1></small>', res)
-        res = re.sub(DOTS+'\|(.*?)\|.*','<dots>\g<1></dots>', res)
-        res = re.sub(HANG+'\|(.+)','<hang>\g<1></hang>', res)
-        res = re.sub(HAFOCH+'.*','<nun>׆</nun>', res)
-        res = re.sub(NOSACH+'\|(.*?)\|.*', '\g<1>', res)
-        res = re.sub(KAMATZ+'\|.*=(.*?)\|.*','\g<1>', res)
- #       res = re.sub(KTIVKRI+'.*?\|(.+?)\|.*?=*(.+?)\|.*','<ktivkri ktiv="\g<1>" kri="\g<2>">', res)
-        res = re.sub(KRIKTIVEM+'.*?\|(.+?)\|.*?\=([^\(]+).*','\g<1>', res)
-        res = re.sub(KTIVKRI+'.*?\|(.+?)\|.*?\=*(.+)','<qereketiv qere="\g<2>" ketiv="\g<1>">', res)
-        res = re.sub(KRIKTIV+'.*?\|(.+?)\|.*?\=*(.+)','<qereketiv qere="\g<2>" ketiv="\g<1>">', res)
+        verse = re.sub(BIG_LETTER+'.*\|.*?=*(.+)','<big>\g<1></big>', verse)
+        verse = re.sub(SMALL_LETTER+'.*\|.*?=*(.+)','<small>\g<1></small>', verse)
+        verse = re.sub(DOTS+'\|(.*?)\|.*','<dots>\g<1></dots>', verse)
+        verse = re.sub(HANG+'\|(.+)','<hang>\g<1></hang>', verse)
+        verse = re.sub(HAFOCH+'.*','<nun>׆</nun>', verse)
+        verse = re.sub(NOSACH+'\|(.*?)\|.*', '\g<1>', verse)
+        verse = re.sub(KAMATZ+'\|.*=(.*?)\|.*','\g<1>', verse)
+        verse = re.sub(KRIKTIVEM+'.*?\|(.+?)\|.*?\=([^\(]+).*','\g<1>', verse)
+        verse = re.sub(KTIVKRI+'.*?\|(.+?)\|.*?\=*(.+)','<qereketiv qere="\g<2>" ketiv="\g<1>">', verse)
+        verse = re.sub(KRIKTIV+'.*?\|(.+?)\|.*?\=*(.+)','<qereketiv qere="\g<2>" ketiv="\g<1>">', verse)
 
-    #    print("after " + res)
-        return res
+        return verse
 
 if __name__ == "__main__":
     parser = Parser()
@@ -154,17 +122,8 @@ if __name__ == "__main__":
 #            if parser.booknum > 2:
 #                continue
 
-
-            # ignore Dovi's remarks for now
-            if row[4].value is not None  and row[1].value is not None:
-                parser.parse_tags(row[2].value)
-
-            if parser.book is not None and row[4].value is not None and row[1].value is not None:
-                res = row[4].value
-#                if '<' in res or '>' in res:
-#                    print("function start " + res)
-                parser.book.write("<verse>")
-                parser.book.write(parser.parse_verse(row[4].value))
-                parser.book.write('</verse>\n')
+            if row[4].value is not None and row[1].value is not None:
+                verse = "<verse>" + parser.parse_verse(row[2].value) + parser.parse_verse(row[4].value) + "</verse>\n"
+                parser.book.write(verse)
 
     parser.close_book()
