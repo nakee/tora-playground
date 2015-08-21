@@ -31,6 +31,7 @@ GALGAL = "גלגל"
 YARECH = "ירח בן יומו"
 HAFOCH = 'נו"ן הפוכה במקרא'
 PARASHA_EMTZA = "פסקא באמצע פסוק"
+DOUBLE = "שני טעמים באות אחת"
 
 class Parser:
 
@@ -108,9 +109,10 @@ class Parser:
         verse = re.sub(NOSACH+'\|(.*?)\|.*', '\g<1>', verse)
         verse = re.sub(KAMATZ+'\|.*=(.*?)\|.*','\g<1>', verse)
         verse = re.sub(KRIKTIVEM+'.*?\|(.+?)\|.*?\=([^\(]+).*','\g<1>', verse)
-        verse = re.sub(KTIVKRI+'.*?\|(.+?)\|.*?\=*(.+)','<qereketiv qere="\g<2>" ketiv="\g<1>">', verse)
-        verse = re.sub(KRIKTIV+'.*?\|(.+?)\|.*?\=*(.+)','<qereketiv qere="\g<2>" ketiv="\g<1>">', verse)
+        verse = re.sub(KTIVKRI+'.*?\|(.+?)\|.*?\=*(.+)','<qereketiv qere="\g<2>" ketiv="\g<1>" />', verse)
+        verse = re.sub(KRIKTIV+'.*?\|(.+?)\|.*?\=*(.+)','<qereketiv qere="\g<2>" ketiv="\g<1>" />', verse)
 
+        verse = re.sub(DOUBLE+'.*?\|(.+)\|(.+)', '<twomarks first="\g<1>" second="\g<2>" />', verse)
         return verse
 
 if __name__ == "__main__":
