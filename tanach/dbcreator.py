@@ -1,6 +1,73 @@
 from openpyxl import load_workbook
 import re
+
 _author__ = 'nakee'
+def is_taham(c):
+     return (c >= 1425 and c <= 1455) or c == 1472 or c == 1475
+
+def is_nikud(letter):
+        return letter >= 1456 and letter <= 1476
+
+def to_nikud(verse):
+     res = ''
+     meta = False
+     psik = False
+     for c in verse:
+          if c == '[':
+               meta = True
+
+          if meta:
+             res += c
+             if c == ']':
+                  meta = False
+          elif c == '׃':
+                    res += '.'
+          elif c == '־':
+               res += ' '
+          elif is_taham(ord(c)):
+               if ord(c) == 1425:
+                    psik = True
+          elif c == ' ' and psik:
+               psik = False
+               res += ', '
+          else:
+               res += c
+     res = re.sub('\[qk k=(.*) q=(.*)\]', '\1', res)
+     return res
+
+def to_tora(verse):
+     res = ''
+     meta = False
+     for c in verse:
+          if c == '[':
+               meta = True
+
+          if meta or ord(c) == 32:
+             res += c
+             if c == ']':
+                  meta = False
+          elif c == '־':
+             res += ' '
+
+          elif not (is_taham(ord(c)) or is_nikud(ord(c))):
+               res += c
+
+     res = re.sub('\[qk k=(.*) q=(.*)\]', '\2', res)
+     return res
+
+
+DJANGO = "no"
+if DJANGO == "yes":
+    import os
+    import sys
+    sys.path.append('../torasite/')
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "torasite.settings")
+
+    # your imports, e.g. Django models
+    from Bible.models import Verse
+
+
+
 
 # editor can't handle hebrew
 START_REMARK = "מ:אין פרשה בתחילת פרק"
@@ -127,5 +194,8 @@ if __name__ == "__main__":
             if row[4].value is not None and row[1].value is not None:
                 verse = "<verse>" + parser.parse_verse(row[2].value) + parser.parse_verse(row[4].value) + "</verse>\n"
                 parser.book.write(verse)
+                if DJANGO == "yes":
+                    v = Verse(full=verse, nikkud=to_nikud(verse), stripped=to_tora(verse))
+                    v.save()
 
     parser.close_book()

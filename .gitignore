@@ -10,6 +10,9 @@ gen### Python template
 __pycache__/
 *.py[cod]
 *$py.class
+/torasite/torasite/settings.py
+/torasite/db.sqlite3
+~*
 
 # C extensions
 *.so
