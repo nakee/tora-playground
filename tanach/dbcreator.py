@@ -1,62 +1,10 @@
 from openpyxl import load_workbook
 import re
+import trutils
 
 _author__ = 'nakee'
-def is_taham(c):
-     return (c >= 1425 and c <= 1455) or c == 1472 or c == 1475
 
-def is_nikud(letter):
-        return letter >= 1456 and letter <= 1476
-
-def to_nikud(verse):
-     res = ''
-     meta = False
-     psik = False
-     for c in verse:
-          if c == '[':
-               meta = True
-
-          if meta:
-             res += c
-             if c == ']':
-                  meta = False
-          elif c == '׃':
-                    res += '.'
-          elif c == '־':
-               res += ' '
-          elif is_taham(ord(c)):
-               if ord(c) == 1425:
-                    psik = True
-          elif c == ' ' and psik:
-               psik = False
-               res += ', '
-          else:
-               res += c
-     res = re.sub('\[qk k=(.*) q=(.*)\]', '\1', res)
-     return res
-
-def to_tora(verse):
-     res = ''
-     meta = False
-     for c in verse:
-          if c == '[':
-               meta = True
-
-          if meta or ord(c) == 32:
-             res += c
-             if c == ']':
-                  meta = False
-          elif c == '־':
-             res += ' '
-
-          elif not (is_taham(ord(c)) or is_nikud(ord(c))):
-               res += c
-
-     res = re.sub('\[qk k=(.*) q=(.*)\]', '\2', res)
-     return res
-
-
-DJANGO = "no"
+DJANGO = "yes"
 if DJANGO == "yes":
     import os
     import sys
@@ -65,8 +13,6 @@ if DJANGO == "yes":
 
     # your imports, e.g. Django models
     from Bible.models import Verse
-
-
 
 
 # editor can't handle hebrew
@@ -192,10 +138,13 @@ if __name__ == "__main__":
 #                continue
 
             if row[4].value is not None and row[1].value is not None:
-                verse = "<verse>" + parser.parse_verse(row[2].value) + parser.parse_verse(row[4].value) + "</verse>\n"
-                parser.book.write(verse)
+                verse = parser.parse_verse(row[2].value) + parser.parse_verse(row[4].value)
+                parser.book.write("<verse>" + verse + "</verse>\n")
                 if DJANGO == "yes":
-                    v = Verse(full=verse, nikkud=to_nikud(verse), stripped=to_tora(verse))
+                    re.sub('<', '[', verse)
+                    re.sub('>', ']', verse)
+                    re.sub('/', '', verse)
+                    v = Verse(full=verse, nikkud=trutils.to_nikud(verse), stripped=trutils.to_tora(verse))
                     v.save()
 
     parser.close_book()
