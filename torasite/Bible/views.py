@@ -10,17 +10,17 @@ def index(request):
 
     from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
-    contact_list = Verse.objects.all()
-    paginator = Paginator(contact_list, 25) # Show 25 contacts per page
+    verse_list = Verse.objects.all()
+    paginator = Paginator(verse_list, 42) # Show 42 verses per page
 
     page = request.GET.get('page')
     try:
-        contacts = paginator.page(page)
+        verses = paginator.page(page)
     except PageNotAnInteger:
         # If page is not an integer, deliver first page.
-        contacts = paginator.page(1)
+        verses = paginator.page(1)
     except EmptyPage:
         # If page is out of range (e.g. 9999), deliver last page of results.
-        contacts = paginator.page(paginator.num_pages)
+        verses = paginator.page(paginator.num_pages)
 
-    return render_to_response('bible/bible.html', {"contacts": contacts})
+    return render_to_response('bible/bible.html', {"verses": verses})

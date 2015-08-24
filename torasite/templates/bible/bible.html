@@ -1,30 +1,32 @@
 <!DOCTYPE html>
 <html dir="rtl" lang="he">
-<head>
-<meta charset="UTF-8">
-<title>Title of the document</title>
-</head>
+  <head>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="site.css">
+	<title>Title of the document</title>
+  </head>
 <body>
 
-{% for contact in contacts %}
-    {# Each "contact" is a Contact model object. #}
-    {{ contact.full }}
+	<div class="main"  style="font-family:Keter YG,SBL Hebrew,Taamey David CLM,Ezra SIL SR,Taamey Frank CLM,Keter Aram Tsova,Ezra SIL; font-size:20pt; line-height:23pt;">
+{% for verse in verses %}
+    {# Each "verse" is a Verse model object. #}
+    {{ verse.full }}
 {% endfor %}
-
-<div class="pagination">
-    <span class="step-links">
-        {% if contacts.has_previous %}
-            <a href="?page={{ contacts.previous_page_number }}">previous</a>
+	</div>
+	<div class="pagination" >
+	  <span class="step-links">
+        {% if verses.has_previous %}
+		<a href="?page={{ verses.previous_page_number }}">previous</a>
         {% endif %}
-
+		
         <span class="current">
-            Page {{ contacts.number }} of {{ contacts.paginator.num_pages }}.
+		  Page {{ verses.number }} of {{ verses.paginator.num_pages }}.
         </span>
-
-        {% if contacts.has_next %}
-            <a href="?page={{ contacts.next_page_number }}">next</a>
+		
+        {% if verses.has_next %}
+		<a href="?page={{ verses.next_page_number }}">next</a>
         {% endif %}
-    </span>
-</div>
-</body>
+	  </span>
+	</div>
+  </body>
 </html>

@@ -141,10 +141,11 @@ if __name__ == "__main__":
                 verse = parser.parse_verse(row[2].value) + parser.parse_verse(row[4].value)
                 parser.book.write("<verse>" + verse + "</verse>\n")
                 if DJANGO == "yes":
-                    re.sub('<', '[', verse)
-                    re.sub('>', ']', verse)
-                    re.sub('/', '', verse)
+                    verse = re.sub('<', '[', verse)
+                    verse = re.sub('>', ']', verse)
+                    verse = re.sub('/', '', verse)
                     v = Verse(full=verse, nikkud=trutils.to_nikud(verse), stripped=trutils.to_tora(verse))
+#                    print(verse)
                     v.save()
 
     parser.close_book()
