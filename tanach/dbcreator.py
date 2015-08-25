@@ -52,12 +52,17 @@ class Parser:
         self.wb = load_workbook('Miqra_al_pi_ha-Mesorah.xlsx')
         self.parts = ["תורה", "נביאים ראשונים", "נביאים אחרונים", "ספרי אמ\"ת", "חמש מגילות", "כתובים אחרונים"]
         self.booknum = 1
+        self.open = 0
+        self.closed = 0
         self.book = None
 
     def close_book(self):
         self.book.write('</book>\n</bible>\n')
 
     def new_book(self, book_name):
+
+        self.open = 0
+        self.closed = 0
 
         if self.book is not None:
             self.close_book()
@@ -76,6 +81,15 @@ class Parser:
         self.book.write('</teiHeader>\n')
 
         self.booknum += 1
+
+    def get_open_number(self):
+        self.open += 1
+        self.closed = 0
+        return str(self.open)
+
+    def get_closed_number(self):
+        self.closed += 1
+        return str(self.closed)
 
     def parse_verse(self, verse):
 
@@ -100,9 +114,15 @@ class Parser:
         verse = re.sub(FONT_SIZE+'.*','', verse) #FIXME: get comments
         verse = re.sub('.*?'+COMMENT+'\|(.*?)}+','<comment>\g<1></comment>', verse)
 
+        count = 0
+        (verse, count) = re.subn(PARASHA_OPEN+'+', '<open-parasha num="', verse)
+        if count > 0:
+            verse += self.get_open_number() +'"/>'
+        count = 0
+        (verse, count) = re.subn(PARASHA_CLOSE+'+', '<closed-parasha num="', verse)
+        if count > 0:
+            verse += self.get_closed_number() +'"/>'
 
-        verse = re.sub(PARASHA_OPEN+'+', '<open-parasha />', verse)
-        verse = re.sub(PARASHA_CLOSE+'+', '<closed-parasha />', verse)
         verse = re.sub(SPACE0, '<0space />', verse)
         verse = re.sub(SPACE1, '<1space />', verse)
         verse = re.sub(SPACE2, '<2space />', verse)
