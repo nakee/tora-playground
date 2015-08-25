@@ -10,7 +10,9 @@
 	<div class="main"  style="font-family:Keter YG,SBL Hebrew,Taamey David CLM,Ezra SIL SR,Taamey Frank CLM,Keter Aram Tsova,Ezra SIL; font-size:20pt; line-height:23pt;">
 {% for verse in verses %}
     {# Each "verse" is a Verse model object. #}
-    {{ verse.full }}
+    {% autoescape off %}
+    {{  verse.get_verse }}
+    {% endautoescape %}
 {% endfor %}
 	</div>
 	<div class="pagination" >

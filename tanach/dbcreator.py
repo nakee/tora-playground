@@ -123,11 +123,11 @@ class Parser:
         if count > 0:
             verse += self.get_closed_number() +'"/>'
 
-        verse = re.sub(SPACE0, '<0space />', verse)
-        verse = re.sub(SPACE1, '<1space />', verse)
-        verse = re.sub(SPACE2, '<2space />', verse)
-        verse = re.sub(SPACE3, '<3space />', verse)
-        verse = re.sub(SPACE4, '<4space />', verse)
+        verse = re.sub(SPACE0, '<space num="0" />', verse)
+        verse = re.sub(SPACE1, '<space num="1" />', verse)
+        verse = re.sub(SPACE2, '<space num="2" />', verse)
+        verse = re.sub(SPACE3, '<space num="3" />', verse)
+        verse = re.sub(SPACE4, '<space num="4" />', verse)
         verse = re.sub(ATNACH_UPSIDE, '<upside-atnach />', verse)
         verse = re.sub(GALGAL, '<galgal />', verse)
         verse = re.sub(YARECH, '<yarech />', verse)
@@ -139,7 +139,9 @@ class Parser:
         verse = re.sub(DOTS+'\|(.*?)\|.*','<dots>\g<1></dots>', verse)
         verse = re.sub(HANG+'\|(.+)','<hang>\g<1></hang>', verse)
         verse = re.sub(HAFOCH+'.*','<nun>׆</nun>', verse)
+        #TODO make into <nosach><bla>ddd</bla><comment>dfsfs</comment>
         verse = re.sub(NOSACH+'\|(.*?)\|.*', '\g<1>', verse)
+        #TODO don't lose comments
         verse = re.sub(KAMATZ+'\|.*=(.*?)\|.*','\g<1>', verse)
         verse = re.sub(KRIKTIVEM+'.*?\|(.+?)\|.*?\=([^\(]+).*','\g<1>', verse)
         verse = re.sub(KTIVKRI+'.*?\|(.+?)\|.*?\=*(.+)','<qereketiv qere="\g<2>" ketiv="\g<1>" />', verse)

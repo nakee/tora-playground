@@ -55,3 +55,5 @@ def to_tora(verse):
      res = re.sub('\[qk k=(.*) q=(.*)\]', '\2', res)
      return res
 
+
+
