@@ -1,13 +1,18 @@
+{% load staticfiles %}
+
 <!DOCTYPE html>
 <html dir="rtl" lang="he">
   <head>
-	<meta charset="UTF-8">
-	<link rel="stylesheet" href="site.css">
+      <link rel="stylesheet" type="text/css" href="{% static 'bible/site.css' %}" />
+      <meta charset="UTF-8">
 	<title>Title of the document</title>
   </head>
 <body>
 
-	<div class="main"  style="font-family:Keter YG,SBL Hebrew,Taamey David CLM,Ezra SIL SR,Taamey Frank CLM,Keter Aram Tsova,Ezra SIL; font-size:20pt; line-height:23pt;">
+    <nav>
+
+    </nav>
+	<div class="main">
 {% for verse in verses %}
     {# Each "verse" is a Verse model object. #}
     {% autoescape off %}

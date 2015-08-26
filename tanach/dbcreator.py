@@ -12,7 +12,7 @@ if DJANGO == "yes":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "torasite.settings")
 
     # your imports, e.g. Django models
-    from Bible.models import Verse
+    from bible.models import Verse
 
 
 # editor can't handle hebrew
