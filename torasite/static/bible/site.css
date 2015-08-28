@@ -1,5 +1,22 @@
 .main {
-  font-family: Keter YG, SBL Hebrew, Taamey David CLM, Ezra SIL SR, Taamey Frank CLM, Keter Aram Tsova, Ezra SIL;
-  font-size:20pt;
-  line-height:23pt;
+    font-family: Keter YG, SBL Hebrew, Taamey David CLM, Ezra SIL SR, Taamey Frank CLM, Keter Aram Tsova, Ezra SIL;
+    font-size:20pt;
+    line-height:23pt;
 }
+
+big {
+    font-size:125%;
+    display:inline;
+}
+
+small {
+    font-size:75%;
+    display:inline;
+}
+
+open-parasha {
+    display: block;
+}
+
+verse:before {content: attr(vid) ". "}
+#verse:after {content: " "}

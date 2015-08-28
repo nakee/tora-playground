@@ -49,24 +49,32 @@ DOUBLE = "שני טעמים באות אחת"
 class Parser:
 
     def __init__(self):
+        """
+
+        :rtype : str
+        """
         self.wb = load_workbook('Miqra_al_pi_ha-Mesorah.xlsx')
         self.parts = ["תורה", "נביאים ראשונים", "נביאים אחרונים", "ספרי אמ\"ת", "חמש מגילות", "כתובים אחרונים"]
-        self.booknum = 1
-        self.open = 0
-        self.closed = 0
+        self.book_id = 1
+        self.verse_id = 0
+        self.open_id = 0
+        self.closed_id = 0
         self.book = None
+
 
     def close_book(self):
         self.book.write('</book>\n</bible>\n')
 
     def new_book(self, book_name):
 
-        self.open = 0
-        self.closed = 0
+        self.open_id = 0
+        self.closed_id = 0
+        self.verse_id = 0
 
         if self.book is not None:
             self.close_book()
-        num = str(self.booknum)
+
+        num = str(self.book_id)
         print("Creating book " + num + ": " + book_name)
         file_name = num + book_name + '.xml'
         self.book = open('out/' + file_name, 'w', encoding="UTF-8")
@@ -80,16 +88,18 @@ class Parser:
         self.book.write('</names>\n')
         self.book.write('</teiHeader>\n')
 
-        self.booknum += 1
+        self.book_id += 1
 
-    def get_open_number(self):
-        self.open += 1
-        self.closed = 0
-        return str(self.open)
+    def new_open(self):
+        self.open_id += 1
+        self.close_id = 0
+        self.verse_id = 0
 
-    def get_closed_number(self):
-        self.closed += 1
-        return str(self.closed)
+        return str(self.open_id)
+
+    def new_close(self):
+        self.close_id += 1
+        return str(self.close_id)
 
     def parse_verse(self, verse):
 
@@ -115,13 +125,13 @@ class Parser:
         verse = re.sub('.*?'+COMMENT+'\|(.*?)}+','<comment>\g<1></comment>', verse)
 
         count = 0
-        (verse, count) = re.subn(PARASHA_OPEN+'+', '<open-parasha num="', verse)
+        (verse, count) = re.subn(PARASHA_OPEN+'+', '<open-parasha id="', verse)
         if count > 0:
-            verse += self.get_open_number() +'"/>'
+            verse += self.new_open() +'"/>'
         count = 0
-        (verse, count) = re.subn(PARASHA_CLOSE+'+', '<closed-parasha num="', verse)
+        (verse, count) = re.subn(PARASHA_CLOSE+'+', '<close-parasha id="', verse)
         if count > 0:
-            verse += self.get_closed_number() +'"/>'
+            verse += self.new_close() +'"/>'
 
         verse = re.sub(SPACE0, '<space num="0" />', verse)
         verse = re.sub(SPACE1, '<space num="1" />', verse)
@@ -147,7 +157,7 @@ class Parser:
         verse = re.sub(KTIVKRI+'.*?\|(.+?)\|.*?\=*(.+)','<qereketiv qere="\g<2>" ketiv="\g<1>" />', verse)
         verse = re.sub(KRIKTIV+'.*?\|(.+?)\|.*?\=*(.+)','<qereketiv qere="\g<2>" ketiv="\g<1>" />', verse)
 
-        verse = re.sub(DOUBLE+'.*?\|(.+)\|(.+)', '<twomarks first="\g<1>" second="\g<2>" />', verse)
+        verse = re.sub(DOUBLE+'.*?\|(.+)\|(.+)' , '<twomarks first="\g<1>" second="\g<2>" />', verse)
         return verse
 
 if __name__ == "__main__":
@@ -155,17 +165,19 @@ if __name__ == "__main__":
     for part in parser.parts:
         ws = parser.wb.get_sheet_by_name(part)
         for row in ws.rows:
-
 #            if parser.booknum > 2:
 #                continue
 
             if row[4].value is not None and row[1].value is not None:
+                # first parse so we can get the right open and close id.
                 verse = parser.parse_verse(row[2].value) + parser.parse_verse(row[4].value)
-                parser.book.write("<verse>" + verse + "</verse>\n")
+                parser.verse_id += 1
+
+                verse = '<verse pid="'+ str(parser.open_id) + '" vid="' + str(parser.verse_id) + '">' \
+                        +  verse + "</verse>"
+                parser.book.write(verse+"\n")
+
                 if DJANGO == "yes":
-                    verse = re.sub('<', '[', verse)
-                    verse = re.sub('>', ']', verse)
-                    verse = re.sub('/', '', verse)
                     v = Verse(full=verse, nikkud=trutils.to_nikud(verse), stripped=trutils.to_tora(verse))
 #                    print(verse)
                     v.save()
