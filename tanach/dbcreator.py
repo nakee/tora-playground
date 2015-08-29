@@ -117,8 +117,8 @@ class Parser:
             self.new_book(re.sub(NEW_BOOK+'\|', '', verse))
             return ''
 
-        verse = re.sub(PASEK,'<pasek />' , verse) # chr(0x05C0)
-        verse = re.sub(LEGARMIA, '<legarmeih />', verse)
+        verse = re.sub(PASEK,'<pasek>׀</pasek >' , verse) # chr(0x05C0)
+        verse = re.sub(LEGARMIA, '<legarmeih>׀</legarmeih>', verse)
 
 
         verse = re.sub(FONT_SIZE+'.*','', verse) #FIXME: get comments
@@ -127,11 +127,11 @@ class Parser:
         count = 0
         (verse, count) = re.subn(PARASHA_OPEN+'+', '<open-parasha id="', verse)
         if count > 0:
-            verse += self.new_open() +'"/>'
+            verse += self.new_open() +'" />'
         count = 0
         (verse, count) = re.subn(PARASHA_CLOSE+'+', '<close-parasha id="', verse)
         if count > 0:
-            verse += self.new_close() +'"/>'
+            verse += self.new_close() +'" />'
 
         verse = re.sub(SPACE0, '<space num="0" />', verse)
         verse = re.sub(SPACE1, '<space num="1" />', verse)
@@ -170,15 +170,18 @@ if __name__ == "__main__":
 
             if row[4].value is not None and row[1].value is not None:
                 # first parse so we can get the right open and close id.
-                verse = parser.parse_verse(row[2].value) + parser.parse_verse(row[4].value)
+                preverse = parser.parse_verse(row[2].value) + '\n'
+                verse = parser.parse_verse(row[4].value)
                 parser.verse_id += 1
 
-                verse = '<verse pid="'+ str(parser.open_id) + '" vid="' + str(parser.verse_id) + '">' \
-                        +  verse + "</verse>"
+                verse = preverse + '<verse pid="' + str(parser.open_id) + '" vid="' + \
+                        str(parser.verse_id) + '">' + verse + "</verse>"
+
                 parser.book.write(verse+"\n")
 
                 if DJANGO == "yes":
-                    v = Verse(full=verse, nikkud=trutils.to_nikud(verse), stripped=trutils.to_tora(verse))
+#                    v = Verse(full=verse, nikkud=trutils.to_nikud(verse), stripped=trutils.to_tora(verse))
+                    v = Verse(full=verse, nikkud=verse, stripped=verse)
 #                    print(verse)
                     v.save()
 

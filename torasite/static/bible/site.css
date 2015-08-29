@@ -14,8 +14,20 @@ small {
     display:inline;
 }
 
+pasek {
+    font-size:50%;
+}
+
+legarmia {
+    font-weight: bold;
+}
+
 open-parasha {
     display: block;
+}
+
+kamatz-katan {
+    color: #9d39ff;
 }
 
 verse:before {content: attr(vid) ". "}
