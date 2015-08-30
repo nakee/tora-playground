@@ -5,7 +5,7 @@ import re
 
 # Create your views here.
 from django.http import HttpResponse
-from Bible.models import Verse
+from bible.models import Verse
 
 def index(request):
 

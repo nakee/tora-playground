@@ -19,4 +19,13 @@ class Migration(migrations.Migration):
                 ('stripped', models.CharField(max_length=500)),
             ],
         ),
+
+        migrations.CreateModel(
+            name='Books',
+            fields=[
+                ('id', models.AutoField(serialize=False, primary_key=True, verbose_name='ID', auto_created=True)),
+                ('name', models.CharField(max_length=100)),
+                ('start', models.ForeignKey(to='bible.Verse')),
+            ],
+        ),
     ]
